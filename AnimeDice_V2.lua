@@ -200,12 +200,28 @@ scan.MouseButton1Click:Connect(function()
 end)
 
 copy.MouseButton1Click:Connect(function()
-    if lastText == "" then status.Text = "Scan first to generate results." return end
-    if type(setclipboard) == "function" then
-        local ok = pcall(function() setclipboard(lastText) end)
-        status.Text = ok and "Results copied to clipboard." or "Clipboard failed; read the rows instead."
+    if lastText == "" then
+        status.Text = "Scan first!"
+        return
+    end
+
+    local clipboard =
+        setclipboard
+        or toclipboard
+        or (syn and syn.write_clipboard)
+
+    if type(clipboard) == "function" then
+        local ok, err = pcall(function()
+            clipboard(lastText)
+        end)
+
+        if ok then
+            status.Text = "Copy requested! Check clipboard."
+        else
+            status.Text = "Copy failed: " .. tostring(err)
+        end
     else
-        status.Text = "Clipboard unavailable; read the results on screen."
+        status.Text = "Clipboard API unavailable"
     end
 end)
 
